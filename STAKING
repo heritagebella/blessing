@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+ // staking our money and geting reward
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';   
+contract staking is ERC20{   //  inheriting ERC20 it enable us to get the functionalities in the openzeppeling contract
+
+mapping(address => uint) public staked;
+mapping(address => uint) private stakedFromTS; //TS means timestamp //private because nobody can call the function
+
+constructor()ERC20('Dera Token','DTK'){ // constructor is to initialise the ERC20 coming from openzepplin
+    _mint(msg.sender, 10**18); // to create money
+}
+function stake(uint amount) public{ //  how much you want to stalk with us
+require(amount >0,'the amount you are trying to stake is less than 1'); //condition to stalk must be greater than zero
+ require(balanceOf(msg.sender) >= amount, 'you do not have up to that amount'); //checking the balance of the person calling the contract,
+  _transfer(msg.sender, address(this), amount);// transferring of the money; owner , to, amount// localtransfer function   
+ 
+if(staked[msg.sender] > 0){
+claim();
+    }
+
+stakedFromTS[msg.sender]= block.timestamp;
+staked[msg.sender ] = staked[msg.sender] + amount; //adding the amount you staked to your account
+
+}  
+
+function unstake(uint amount) public {
+require(amount >0, 'amount <=0');
+require(staked[msg.sender] > 0, ' you did not stake with us');  
+_transfer(address(this), msg.sender, amount);
+
+stakedFromTS[msg.sender]= block.timestamp;
+staked[msg.sender] = staked[msg.sender]- amount;
+}
+
+function claim() public { //    it is a continuous thing and it is time based
+require(staked[msg.sender] > 0, 'you did not stake with us'); //checking the mapping to kno if you have money with us 
+uint secondsStaked = block.timestamp - stakedFromTS[msg.sender];
+
+uint rewards =staked[msg. sender] *secondsStaked / 3.154e7; //reward is the secondsstaked divided by amount of seconds in a year
+_mint(msg.sender,rewards);  
+stakedFromTS[msg.sender]=block.timestamp;
+
+}
+}
